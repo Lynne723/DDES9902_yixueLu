@@ -14,13 +14,20 @@ public class checkpot : MonoBehaviour
     public TextMeshProUGUI timeText;
     public bool showGizmos = true;
 
+    [Header("Smoke Effect Settings")]
+    public ParticleSystem smokeEffect;
+    public Transform smokeSpawnPoint;
+
+    [Header("Audio Settings")] 
+    public AudioSource alarmAudio;
+
     [Header("Alarm Parameters")]
     public float flashSpeed = 5f;
-    public float entryRequiredTime = 2f; // New: Time Target A must stay before starting main countdown
-    public float totalRequiredTime = 10f; // Main countdown (10s)
+    public float entryRequiredTime = 2f;
+    public float totalRequiredTime = 10f;
 
-    private float targetAInAreaTimer = 0f; // Timer for the 2s requirement
-    private float activationTimer = 0f;    // Timer for the 10s requirement
+    private float targetAInAreaTimer = 0f;
+    private float activationTimer = 0f;
     private bool isFlashing = false;
 
     void Update()
@@ -30,7 +37,6 @@ public class checkpot : MonoBehaviour
         bool isAInside = IsInside(targetA.position);
         bool isTagItemInside = CheckTagItemInside();
 
-        // STEP 1: Check if Target A has been inside for 2 seconds
         if (isAInside)
         {
             if (targetAInAreaTimer < entryRequiredTime)
@@ -40,13 +46,11 @@ public class checkpot : MonoBehaviour
         }
         else
         {
-            // Reset both timers if Target A leaves
             targetAInAreaTimer = 0f;
             ResetSystem();
             return;
         }
 
-        // STEP 2: Only if Target A has stayed for 2s, check for the Tagged Object and start 10s timer
         if (targetAInAreaTimer >= entryRequiredTime && isTagItemInside)
         {
             if (activationTimer < totalRequiredTime)
@@ -62,7 +66,6 @@ public class checkpot : MonoBehaviour
         }
         else
         {
-            // If Target A is there but Tagged object is missing, or A hasn't reached 2s yet
             isFlashing = false;
             activationTimer = 0f;
 
@@ -79,10 +82,42 @@ public class checkpot : MonoBehaviour
         if (isFlashing)
         {
             HandleFlashing();
+
+           
+            if (smokeEffect != null)
+            {
+                if (smokeSpawnPoint != null)
+                {
+                    smokeEffect.transform.position = smokeSpawnPoint.position;
+                }
+
+                if (!smokeEffect.isPlaying)
+                {
+                    smokeEffect.Play();
+                }
+            }
+
+           
+            if (alarmAudio != null && !alarmAudio.isPlaying)
+            {
+                alarmAudio.Play();
+            }
         }
         else
         {
             if (warningLight != null) warningLight.enabled = false;
+
+            
+            if (smokeEffect != null && smokeEffect.isPlaying)
+            {
+                smokeEffect.Stop();
+            }
+
+            
+            if (alarmAudio != null && alarmAudio.isPlaying)
+            {
+                alarmAudio.Stop();
+            }
         }
     }
 
@@ -91,9 +126,15 @@ public class checkpot : MonoBehaviour
         activationTimer = 0f;
         isFlashing = false;
         if (warningLight != null) warningLight.enabled = false;
+        if (smokeEffect != null) smokeEffect.Stop();
+
+    
+        if (alarmAudio != null) alarmAudio.Stop();
+
         UpdateUI(0, "IDLE");
     }
 
+   
     bool IsInside(Vector3 worldPos)
     {
         Vector3 localPos = areaCenter.InverseTransformPoint(worldPos);
@@ -121,7 +162,6 @@ public class checkpot : MonoBehaviour
     void UpdateUI(float timeLeft, string statusMessage)
     {
         if (timeText == null) return;
-
         if (isFlashing)
         {
             timeText.text = "WARNING: AREA BREACHED";
@@ -141,7 +181,12 @@ public class checkpot : MonoBehaviour
         Matrix4x4 rotationMatrix = Matrix4x4.TRS(areaCenter.position, areaCenter.rotation, Vector3.one);
         Gizmos.matrix = rotationMatrix;
         Gizmos.DrawWireCube(Vector3.zero, areaSize);
-        Gizmos.color = new Color(0, 1, 1, 0.15f);
-        Gizmos.DrawCube(Vector3.zero, areaSize);
+
+        if (smokeSpawnPoint != null)
+        {
+            Gizmos.matrix = Matrix4x4.identity;
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(smokeSpawnPoint.position, 0.2f);
+        }
     }
 }

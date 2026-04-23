@@ -14,13 +14,17 @@ public class kx : MonoBehaviour
     public TextMeshProUGUI timeText;
     public bool showGizmos = true;
 
+    
+    [Header("Audio Settings")]
+    public AudioSource alarmMusic;
+
     [Header("Alarm Parameters")]
     public float flashSpeed = 5f;
-    public float entryRequiredTime = 2f; // New: Time Target A must stay before starting main countdown
-    public float totalRequiredTime = 10f; // Main countdown (10s)
+    public float entryRequiredTime = 2f;
+    public float totalRequiredTime = 10f;
 
-    private float targetAInAreaTimer = 0f; // Timer for the 2s requirement
-    private float activationTimer = 0f;    // Timer for the 10s requirement
+    private float targetAInAreaTimer = 0f;
+    private float activationTimer = 0f;
     private bool isFlashing = false;
 
     void Update()
@@ -30,7 +34,6 @@ public class kx : MonoBehaviour
         bool isAInside = IsInside(targetA.position);
         bool isTagItemInside = CheckTagItemInside();
 
-        // STEP 1: Check if Target A has been inside for 2 seconds
         if (isAInside)
         {
             if (targetAInAreaTimer < entryRequiredTime)
@@ -40,13 +43,11 @@ public class kx : MonoBehaviour
         }
         else
         {
-            // Reset both timers if Target A leaves
             targetAInAreaTimer = 0f;
             ResetSystem();
             return;
         }
 
-        // STEP 2: Only if Target A has stayed for 2s, check for the Tagged Object and start 10s timer
         if (targetAInAreaTimer >= entryRequiredTime && isTagItemInside)
         {
             if (activationTimer < totalRequiredTime)
@@ -62,7 +63,6 @@ public class kx : MonoBehaviour
         }
         else
         {
-            // If Target A is there but Tagged object is missing, or A hasn't reached 2s yet
             isFlashing = false;
             activationTimer = 0f;
 
@@ -79,10 +79,22 @@ public class kx : MonoBehaviour
         if (isFlashing)
         {
             HandleFlashing();
+
+            
+            if (alarmMusic != null && !alarmMusic.isPlaying)
+            {
+                alarmMusic.Play();
+            }
         }
         else
         {
             if (warningLight != null) warningLight.enabled = false;
+
+           
+            if (alarmMusic != null && alarmMusic.isPlaying)
+            {
+                alarmMusic.Stop();
+            }
         }
     }
 
@@ -91,6 +103,13 @@ public class kx : MonoBehaviour
         activationTimer = 0f;
         isFlashing = false;
         if (warningLight != null) warningLight.enabled = false;
+
+        
+        if (alarmMusic != null && alarmMusic.isPlaying)
+        {
+            alarmMusic.Stop();
+        }
+
         UpdateUI(0, "IDLE");
     }
 

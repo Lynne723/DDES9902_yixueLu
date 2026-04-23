@@ -8,6 +8,7 @@ TagManager:
   - meat
   - hb
   - obj
+  - cai
   layers:
   - Default
   - TransparentFX
