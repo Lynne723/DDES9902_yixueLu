@@ -1,29 +1,31 @@
 using UnityEngine;
 using System.Collections;
 
-public class RectangleAreaManager : MonoBehaviour
+public class SphereAreaManager : MonoBehaviour
 {
-    [Header("Tag Settings")]
-    public string targetTag = "cai";    // The tag of objects to detect in Area A
+    [Header("标签设置")]
+    public string targetTag = "cai";
 
-    [Header("Area Settings")]
-    public Transform areaCenterA;      // Center reference for Area A
-    public Vector3 areaSizeA = new Vector3(2f, 2f, 2f);
-    public Transform areaCenterB;      // Center reference for Area B
+    [Header("区域设置")]
+    public Transform areaCenterA;
+    // --- 修改部分：将 Size 改为半径 ---
+    public float areaRadiusA = 2f;
+    // ----------------------------
+    public Transform areaCenterB;
     public Vector3 areaSizeB = new Vector3(3f, 3f, 3f);
-    public bool showGizmos = true;    // Toggle visibility of area outlines in Scene view
+    public bool showGizmos = true;
 
-    [Header("Object D Reciprocating Motion")]
+    [Header("物体D 往复运动设置")]
     public GameObject objectD;
-    public Transform posNodeA;         // Start position handle (draggable in Scene)
-    public Transform posNodeB;         // End position handle (draggable in Scene)
+    public Transform posNodeA;
+    public Transform posNodeB;
     public float moveSpeed = 2f;
-    public float moveDuration = 5f;    // Total time the movement cycle lasts
+    public float moveDuration = 5f;
 
-    [Header("Object A Spawning")]
+    [Header("物体A 刷新设置")]
     public GameObject prefabA;
-    public float spawnInterval = 1f;   // Time between each spawn
-    public float spawnDuration = 5f;   // Total time the spawning process lasts
+    public float spawnInterval = 1f;
+    public float spawnDuration = 5f;
 
     private float timerA = 0f;
     private bool isExecuting = false;
@@ -33,64 +35,55 @@ public class RectangleAreaManager : MonoBehaviour
         CheckAreaA();
     }
 
-    // 1. Spatial Detection (Rectangle/Box Bounds)
     void CheckAreaA()
     {
         if (isExecuting || areaCenterA == null) return;
 
-        // Create a mathematical bounding box for Area A
-        Bounds boundsA = new Bounds(areaCenterA.position, areaSizeA);
-
-        // Find all objects with the specified tag
         GameObject[] targets = GameObject.FindGameObjectsWithTag(targetTag);
         bool anyInside = false;
 
         foreach (var obj in targets)
         {
-            // Check if the object's pivot point is inside the box
-            if (boundsA.Contains(obj.transform.position))
+            // --- 修改部分：改用距离判断 ---
+            // 如果目标点与球心的距离小于等于半径，则视为在区域内
+            float distance = Vector3.Distance(obj.transform.position, areaCenterA.position);
+            if (distance <= areaRadiusA)
             {
                 anyInside = true;
                 break;
             }
+            // ----------------------------
         }
 
         if (anyInside)
         {
             timerA += Time.deltaTime;
-            // Trigger sequence if an object stays for more than 2 seconds
-            if (timerA >= 2f)
+            if (timerA >= 0.01f)
             {
                 StartCoroutine(ExecuteSequence());
-                timerA = 0f; // Reset timer to prevent multiple triggers
+                timerA = 0f;
             }
         }
         else
         {
-            timerA = 0f; // Reset timer if the area is empty or sequence is interrupted
+            timerA = 0f;
         }
     }
 
-    // 2. Main Execution Sequence
     IEnumerator ExecuteSequence()
     {
         isExecuting = true;
-
-        // Start both motion and spawning coroutines simultaneously
         Coroutine moveRoutine = StartCoroutine(MoveObjectD());
         Coroutine spawnRoutine = StartCoroutine(SpawnObjectsInB());
 
-        // Wait for the defined duration (max of move or spawn durations)
         yield return new WaitForSeconds(Mathf.Max(moveDuration, spawnDuration));
 
-        // Stop behaviors after time expires
         if (moveRoutine != null) StopCoroutine(moveRoutine);
         if (spawnRoutine != null) StopCoroutine(spawnRoutine);
 
         isExecuting = false;
     }
 
-    // 3. Object D Movement Logic (Ping-Pong)
     IEnumerator MoveObjectD()
     {
         if (objectD == null || posNodeA == null || posNodeB == null) yield break;
@@ -98,24 +91,19 @@ public class RectangleAreaManager : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < moveDuration)
         {
-            // Calculate interpolation factor using PingPong for back-and-forth motion
             float t = Mathf.PingPong(Time.time * moveSpeed, 1f);
             objectD.transform.position = Vector3.Lerp(posNodeA.position, posNodeB.position, t);
-
             elapsed += Time.deltaTime;
             yield return null;
         }
     }
 
-    // 4. Random Spawning in Area B
     IEnumerator SpawnObjectsInB()
     {
         if (prefabA == null || areaCenterB == null) yield break;
-
         float elapsed = 0f;
         while (elapsed < spawnDuration)
         {
-            // Generate a random position within the box dimensions
             float rx = Random.Range(-areaSizeB.x / 2, areaSizeB.x / 2);
             float ry = Random.Range(-areaSizeB.y / 2, areaSizeB.y / 2);
             float rz = Random.Range(-areaSizeB.z / 2, areaSizeB.z / 2);
@@ -128,26 +116,24 @@ public class RectangleAreaManager : MonoBehaviour
         }
     }
 
-    // 5. Visualize Areas and Paths in Scene View
     void OnDrawGizmos()
     {
         if (!showGizmos) return;
 
-        // Draw Detection Area A (Green)
+        // --- 修改部分：绘制球体 ---
         if (areaCenterA != null)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(areaCenterA.position, areaSizeA);
+            Gizmos.DrawWireSphere(areaCenterA.position, areaRadiusA);
         }
+        // ----------------------------
 
-        // Draw Spawn Area B (Cyan)
         if (areaCenterB != null)
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireCube(areaCenterB.position, areaSizeB);
         }
 
-        // Draw Movement Path for Object D (Yellow)
         if (posNodeA != null && posNodeB != null)
         {
             Gizmos.color = Color.yellow;

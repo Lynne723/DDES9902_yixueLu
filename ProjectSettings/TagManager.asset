@@ -9,6 +9,7 @@ TagManager:
   - hb
   - obj
   - cai
+  - Pian
   layers:
   - Default
   - TransparentFX
