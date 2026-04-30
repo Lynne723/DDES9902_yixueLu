@@ -3,26 +3,24 @@ using System.Collections;
 
 public class SphereAreaManager : MonoBehaviour
 {
-    [Header("标签设置")]
+    [Header("tag setting")]
     public string targetTag = "cai";
 
-    [Header("区域设置")]
+    [Header("area setting")]
     public Transform areaCenterA;
-    // --- 修改部分：将 Size 改为半径 ---
     public float areaRadiusA = 2f;
-    // ----------------------------
     public Transform areaCenterB;
     public Vector3 areaSizeB = new Vector3(3f, 3f, 3f);
     public bool showGizmos = true;
 
-    [Header("物体D 往复运动设置")]
+    [Header("object D comeback")]
     public GameObject objectD;
     public Transform posNodeA;
     public Transform posNodeB;
     public float moveSpeed = 2f;
     public float moveDuration = 5f;
 
-    [Header("物体A 刷新设置")]
+    [Header("object refresh setting")]
     public GameObject prefabA;
     public float spawnInterval = 1f;
     public float spawnDuration = 5f;
@@ -44,15 +42,15 @@ public class SphereAreaManager : MonoBehaviour
 
         foreach (var obj in targets)
         {
-            // --- 修改部分：改用距离判断 ---
-            // 如果目标点与球心的距离小于等于半径，则视为在区域内
+           
+            
             float distance = Vector3.Distance(obj.transform.position, areaCenterA.position);
             if (distance <= areaRadiusA)
             {
                 anyInside = true;
                 break;
             }
-            // ----------------------------
+            
         }
 
         if (anyInside)
@@ -120,13 +118,13 @@ public class SphereAreaManager : MonoBehaviour
     {
         if (!showGizmos) return;
 
-        // --- 修改部分：绘制球体 ---
+     
         if (areaCenterA != null)
         {
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(areaCenterA.position, areaRadiusA);
         }
-        // ----------------------------
+        
 
         if (areaCenterB != null)
         {

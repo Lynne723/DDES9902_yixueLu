@@ -10,6 +10,7 @@ TagManager:
   - obj
   - cai
   - Pian
+  - jiesuan
   layers:
   - Default
   - TransparentFX

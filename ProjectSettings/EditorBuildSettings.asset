@@ -15,8 +15,14 @@ EditorBuildSettings:
     path: Assets/EZPZ b) Examples/a) Standalone Example Scenes/01 Item Cycling.unity
     guid: 7ecc1225d74d4454aad820312b981b7c
   - enabled: 1
+    path: Assets/New My kitchen/StartScene.unity
+    guid: 56ccead4950f67c449f28520814e3b6b
+  - enabled: 1
     path: Assets/New My kitchen/kitchen.unity
     guid: 974aae7eecdc56e42ba5f942f24675ac
+  - enabled: 1
+    path: "Assets/New My kitchen/kitchen \uFF08free\uFF09.unity"
+    guid: af6152f84624bf04ea1e01997c244e2a
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 3c28928f4ba463b408fa3dad31f078ec, type: 2}

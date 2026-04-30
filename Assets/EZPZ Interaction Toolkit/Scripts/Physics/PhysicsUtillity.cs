@@ -16,37 +16,37 @@ public class PhysicsUtillity : MonoBehaviour
     [Header("Audio Settings")]
     public AudioSource interactionAudio;
 
-    // --- 新增：UI 控制设置 ---
+    
     [Header("UI Feedback Settings")]
-    public GameObject feedbackCanvas; // 指定的 Canvas 或 UI 面板
-    public float uiDisplayTime = 2f;  // 公开变量：等待时间
+    public GameObject feedbackCanvas; 
+    public float uiDisplayTime = 2f;
 
-    private Coroutine uiCoroutine;    // 用于管理协程，防止多次触发冲突
+    private Coroutine uiCoroutine;    
 
     void Start()
     {
         if (rBody == null)
             rBody = GetComponent<Rigidbody>();
 
-        // 初始确保 Canvas 是失活的
+       
         if (feedbackCanvas != null)
             feedbackCanvas.SetActive(false);
     }
 
-    // --- 修改：统一的反馈逻辑（音效 + UI） ---
+    
     private void TriggerFeedback()
     {
-        // 播放音效
+      
         if (interactionAudio != null)
         {
             interactionAudio.Stop();
             interactionAudio.Play();
         }
 
-        // 激活 UI 并开始倒计时
+        
         if (feedbackCanvas != null)
         {
-            // 如果之前已经在倒计时，先停止它，重新开始计时
+            
             if (uiCoroutine != null)
                 StopCoroutine(uiCoroutine);
 
@@ -54,19 +54,19 @@ public class PhysicsUtillity : MonoBehaviour
         }
     }
 
-    // 新增：处理 UI 显示和隐藏的协程
+    
     private IEnumerator UIShowAndHide()
     {
-        feedbackCanvas.SetActive(true);    // 激活
-        yield return new WaitForSeconds(uiDisplayTime); // 等待公开变量设定的时间
-        feedbackCanvas.SetActive(false);   // 失活
+        feedbackCanvas.SetActive(true);    
+        yield return new WaitForSeconds(uiDisplayTime); 
+        feedbackCanvas.SetActive(false);   
         uiCoroutine = null;
     }
 
     public void SpinAxis(Vector3 axis, float force)
     {
         rBody.AddRelativeTorque(axis * force * (forceFactor + RandomRoll()));
-        TriggerFeedback(); // 触发反馈
+        TriggerFeedback(); 
     }
 
     public void SpinAxisX(float force)
@@ -87,7 +87,7 @@ public class PhysicsUtillity : MonoBehaviour
     public void AddForce(Vector3 axis, float force)
     {
         rBody.AddRelativeForce(axis * force * (forceFactor + RandomRoll()));
-        TriggerFeedback(); // 触发反馈
+        TriggerFeedback(); 
     }
 
     public void AddForce(float force)
